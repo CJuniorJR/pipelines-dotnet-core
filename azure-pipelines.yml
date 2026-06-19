@@ -14,7 +14,7 @@ pool:
 stages:
 # 1. BUILD STAGE
 - stage: Build
-  displayName: 'Build Application'
+  displayName: 'Build'
   jobs:
   - job: BuildJob
     displayName: 'Compile and Package'
@@ -33,7 +33,7 @@ stages:
 
 # 2. DEVELOPMENT DEPLOY STAGE
 - stage: DeployDev
-  displayName: 'Deploy to Dev'
+  displayName: 'Deploy Dev'
   dependsOn: Build 
   condition: succeeded()
   jobs:
@@ -52,7 +52,7 @@ stages:
 
 # 2. HOMOLOGATION DEPLOY STAGE
 - stage: DeployHomo
-  displayName: 'Deploy to Homologation'
+  displayName: 'Deploy Homologation'
   dependsOn: DeployDev # 
   condition: succeeded()
   jobs:
