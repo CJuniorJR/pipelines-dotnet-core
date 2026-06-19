@@ -4,14 +4,67 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
+  branches:
+    include:
+      - master  # Only builds when code is pushed to the develop branch
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest' # Change this if you require a Windows or Mac agent
 
-variables:
-  buildConfiguration: 'Release'
+stages:
+# 1. BUILD STAGE
+- stage: Build
+  displayName: 'Build Application'
+  jobs:
+  - job: BuildJob
+    displayName: 'Compile and Package'
+    steps:
+    - script: |
+        echo "Running tests..."
+        echo "Compiling code..."
+      displayName: 'Execute Build Scripts'
+      
+    # Example: Publishing an artifact to pass to deployment stages
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)'
+        artifact: 'drop'
+        publishLocation: 'pipeline'
 
-steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+# 2. DEVELOPMENT DEPLOY STAGE
+- stage: DeployDev
+  displayName: 'Deploy to Dev'
+  dependsOn: Build 
+  condition: succeeded()
+  jobs:
+  - deployment: DeployDevJob
+    displayName: 'Deploy to Dev Environment'
+    environment: 'Dev-Environment'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: 'drop'
+          - script: |
+              echo "Deploying artifact to Development servers..."
+            displayName: 'Execute Dev Deployment'
+
+# 2. HOMOLOGATION DEPLOY STAGE
+- stage: DeployHomo
+  displayName: 'Deploy to Homologation'
+  dependsOn: DeployDev # 
+  condition: succeeded()
+  jobs:
+  - deployment: DeployHomoJob
+    displayName: 'Deploy to Homo Environment'
+    environment: 'Homo-Environment'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: 'drop'
+          - script: |
+              echo "Deploying artifact to Homologation servers..."
+            displayName: 'Execute Homo Deployment'
