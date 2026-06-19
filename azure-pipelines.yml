@@ -6,10 +6,10 @@
 trigger:
   branches:
     include:
-      - master  # Only builds when code is pushed to the develop branch
+      - master 
 
 pool:
-  vmImage: 'ubuntu-latest' # Change this if you require a Windows or Mac agent
+  vmImage: 'ubuntu-latest' 
 
 stages:
 # 1. BUILD STAGE
@@ -24,7 +24,6 @@ stages:
         echo "Compiling code..."
       displayName: 'Execute Build Scripts'
       
-    # Example: Publishing an artifact to pass to deployment stages
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)'
